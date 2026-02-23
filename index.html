@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Now</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header class="header">
@@ -12,27 +14,6 @@
         </a> 
 
         <div class="header-controls">
-            <!-- Favorites  -->
-            <div class="favorites-dropdown">
-                <button class="favorites-button" id="favoritesButton" aria-expanded="false" aria-haspopup="true">
-                    <img src="./assets/images/icon-checkmark.svg" alt="">
-                    Favorites
-                    <img src="./assets/images/icon-dropdown.svg" alt="" class="dropdown-icon">
-                </button>
-
-                <div class="favorites-menu" id="favoritesMenu" role="menu" hidden>
-                    <div class="favorites-header">
-                        <h4>Saved Locations</h4>
-                    </div>
-                    <div class="favorites-list" id="favoritesList">
-                        <div class="no-favorites" id="noFavorites">
-                            <p>No Saved Location yet</p>
-                            <p class="text-small">Add locations to your favorites for quick access</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Units -->
             <div class="units-dropdown">
                 <button class="units-button" id="unitsButton" aria-expanded="false" aria-haspopup="true">
