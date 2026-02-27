@@ -46,7 +46,21 @@ const errorState = document.getElementById('errorState');
 
 let searchTimeout;
 
-// Search input with debounce (shows suggestions while typing)
+// Retry button - use last searched location
+document.getElementById('retryButton').addEventListener('click', function() {
+    // Get the last searched location from the input
+    const query = searchInput.value.trim();
+    
+    if (query.length >= 2) {
+        // Trigger search again
+        searchButton.click();
+    } else {
+        // If no query, use default location (Berlin)
+        fetchWeatherData(52.52, 13.405, 'Berlin, Germany');
+    }
+});
+
+// shows suggestions while typing
 searchInput.addEventListener('input', function(e) {
     const query = e.target.value.trim();
     
@@ -62,7 +76,7 @@ searchInput.addEventListener('input', function(e) {
     }, 200);
 });
 
-// Search button click - direct weather fetch (no dropdown selection needed)
+// search button click
 searchButton.addEventListener('click', function(e) {
     e.preventDefault();
     const query = searchInput.value.trim();
@@ -85,7 +99,6 @@ searchButton.addEventListener('click', function(e) {
                 searchResults.hidden = true;
             } else {
                 console.log('No locations found');
-                // You could show a "not found" message here
             }
         })
         .catch(error => {
@@ -95,7 +108,7 @@ searchButton.addEventListener('click', function(e) {
         });
 });
 
-// Fetch location suggestions for dropdown
+
 function fetchLocationSuggestions(query) {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
     
@@ -110,7 +123,22 @@ function fetchLocationSuggestions(query) {
         });
 }
 
-// Display search results dropdown
+// Set initial state on page load
+window.addEventListener('load', function() {
+    // Hide error state initially
+    errorState.hidden = true;
+    
+    // Hide loading state initially
+    loadingState.hidden = true;
+    
+    // Show weather data with default Berlin values
+    weatherData.hidden = false;
+    
+    // You could also fetch default weather for Berlin
+    // fetchWeatherData(52.52, 13.405, 'Berlin, Germany');
+});
+
+
 function displaySearchResults(results) {
     searchResults.innerHTML = '';
     
@@ -143,7 +171,7 @@ function displaySearchResults(results) {
     searchResults.hidden = false;
 }
 
-// Select location from dropdown
+
 function selectLocation(resultElement) {
     const lat = resultElement.dataset.lat;
     const lon = resultElement.dataset.lon;
@@ -155,8 +183,11 @@ function selectLocation(resultElement) {
     fetchWeatherData(lat, lon, locationName);
 }
 
-// Fetch weather data from Open-Meteo
 function fetchWeatherData(lat, lon, locationName) {
+    // When fetching new data:
+    // - Show loading
+    // - Hide error
+    // - Hide weather data (will show again only on success)
     loadingState.hidden = false;
     errorState.hidden = true;
     weatherData.hidden = true;
@@ -164,32 +195,53 @@ function fetchWeatherData(lat, lon, locationName) {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
     
     fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
+            // Success: Update UI, show weather data, hide loading and error
             updateWeatherUI(data, locationName);
             loadingState.hidden = true;
+            errorState.hidden = true;
             weatherData.hidden = false;
         })
         .catch(error => {
             console.error('Error fetching weather:', error);
+            
+            // Error: Hide loading and weather data, show error
             loadingState.hidden = true;
+            weatherData.hidden = true;
             errorState.hidden = false;
-            document.getElementById('errorMessage').textContent = 'Failed to load weather data. Please try again.';
+            
+            // Update error message to match design
+            document.getElementById('errorMessage').textContent = 
+                'We couldn\'t connect to the server (API error). Please try again in a few moments.';
         });
 }
 
-// Update UI with weather data
 function updateWeatherUI(data, locationName) {
     document.getElementById('currentLocation').textContent = locationName;
+    
+    // Update current date
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const formattedDate = now.toLocaleDateString('en-US', options);
+    document.getElementById('currentDate').textContent = formattedDate;
     
     if (data.current_weather) {
         const current = data.current_weather;
         
+        // Temperature
         document.getElementById('currentTemp').textContent = Math.round(current.temperature) + '°';
         
+        // Weather description
         const weatherDesc = getWeatherDescription(current.weathercode);
         document.getElementById('currentDescription').textContent = weatherDesc;
         
+        // Weather icon
         const iconMap = {
             0: 'icon-sunny.webp',
             1: 'icon-sunny.webp',
@@ -201,24 +253,83 @@ function updateWeatherUI(data, locationName) {
             71: 'icon-snow.webp',
             95: 'icon-thunderstorm.webp'
         };
-        
         const iconFile = iconMap[current.weathercode] || 'icon-overcast.webp';
         document.getElementById('currentWeatherIcon').src = `./assets/images/${iconFile}`;
+        
+        // Wind speed
+        document.getElementById('windSpeed').textContent = 
+            Math.round(current.windspeed) + ' km/h';
+        
+        // Feels like (approximate)
+        document.getElementById('feelsLike').textContent = 
+            Math.round(current.temperature - 2) + '°';
+    }
+    
+    // Humidity (from hourly data)
+    if (data.hourly && data.hourly.relativehumidity_2m) {
+        document.getElementById('humidity').textContent = 
+            data.hourly.relativehumidity_2m[0] + '%';
+    }
+    
+    // Precipitation (from hourly data if available)
+    if (data.hourly && data.hourly.precipitation) {
+        document.getElementById('precipitation').textContent = 
+            data.hourly.precipitation[0] + ' mm';
+    }
+    
+    // Store data for hourly forecast
+    window.hourlyData = data.hourly;
+    window.dailyData = data.daily;
+    
+    // Display hourly forecast
+    displayHourlyForecast(0);
+    
+    // Update daily forecast
+    if (data.daily) {
+        const forecastDays = document.getElementById('forecastDays');
+        forecastDays.innerHTML = '';
+        
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        data.daily.time.forEach((date, index) => {
+            if (index >= 7) return;
+            
+            const dayDate = new Date(date);
+            const dayName = days[dayDate.getDay()];
+            const maxTemp = Math.round(data.daily.temperature_2m_max[index]);
+            const minTemp = Math.round(data.daily.temperature_2m_min[index]);
+            const weatherCode = data.daily.weathercode[index];
+            
+            const iconMap = {
+                0: 'icon-sunny.webp',
+                1: 'icon-sunny.webp',
+                2: 'icon-partly-cloudy.webp',
+                3: 'icon-overcast.webp',
+                45: 'icon-fog.webp',
+                51: 'icon-rain.webp',
+                61: 'icon-rain.webp',
+                71: 'icon-snow.webp',
+                95: 'icon-thunderstorm.webp'
+            };
+            const iconFile = iconMap[weatherCode] || 'icon-overcast.webp';
+            
+            const dayElement = document.createElement('div');
+            dayElement.className = 'forecast-day';
+            dayElement.innerHTML = `
+                <div class="day-name">${dayName}</div>
+                <img src="./assets/images/${iconFile}" alt="Weather" class="day-icon">
+                <div class="day-temps">
+                    <span class="temp-high">${maxTemp}°</span>
+                    <span class="temp-low">${minTemp}°</span>
+                </div>
+            `;
+            
+            forecastDays.appendChild(dayElement);
+        });
     }
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const isClickInside = searchInput.contains(event.target) || 
-                         searchResults.contains(event.target) ||
-                         searchButton.contains(event.target);
-    
-    if (!isClickInside) {
-        searchResults.hidden = true;
-    }
-});
 
-// Weather code to description mapping
 function getWeatherDescription(code) {
     const descriptions = {
         0: 'Clear sky',
@@ -253,7 +364,7 @@ function getWeatherDescription(code) {
     return descriptions[code] || 'Unknown';
 }
 
-// Keyboard navigation
+// keyboard navigation
 searchInput.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         searchResults.hidden = true;
@@ -283,6 +394,77 @@ searchResults.addEventListener('keydown', function(e) {
         selectLocation(document.activeElement);
     }
 });
+
+
+
+
+
+
+
+
+
+// display hourly forecast for a specific day index
+function displayHourlyForecast(dayIndex) {
+    if (!window.hourlyData) return;
+    
+    const hourlyContainer = document.getElementById('forecastHours');
+    hourlyContainer.innerHTML = ''; 
+    
+    const hourlyTime = window.hourlyData.time;
+    const hourlyTemp = window.hourlyData.temperature_2m;
+    const hourlyWeatherCode = window.hourlyData.weathercode;
+    
+    // each day has 24 hours (0-23)
+    const startHour = dayIndex * 24;
+    const endHour = startHour + 24;
+    
+    // show only hours from 6 AM to 10 PM (or all hours if you prefer)
+    for (let i = startHour; i < endHour; i++) {
+        if (i >= hourlyTime.length) break;
+        
+        // parse time to get hour only
+        const timeStr = hourlyTime[i];
+        const hour = new Date(timeStr).getHours();
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        const timeLabel = `${hour12} ${ampm}`;
+        
+        const temp = Math.round(hourlyTemp[i]);
+        const weatherCode = hourlyWeatherCode[i];
+        
+        // get icon for this hour
+        const iconMap = {
+            0: 'icon-sunny.webp',
+            1: 'icon-sunny.webp',
+            2: 'icon-partly-cloudy.webp',
+            3: 'icon-overcast.webp',
+            45: 'icon-fog.webp',
+            51: 'icon-rain.webp',
+            61: 'icon-rain.webp',
+            71: 'icon-snow.webp',
+            95: 'icon-thunderstorm.webp'
+        };
+        const iconFile = iconMap[weatherCode] || 'icon-overcast.webp';
+        
+        // create hourly slot
+        const hourSlot = document.createElement('div');
+        hourSlot.className = 'forecast-hour';
+        hourSlot.innerHTML = `
+            <div class="hour-time">${timeLabel}</div>
+            <img src="./assets/images/${iconFile}" alt="Weather" class="hour-icon">
+            <div class="hour-temp">${temp}°</div>
+        `;
+        
+        hourlyContainer.appendChild(hourSlot);
+    }
+}
+
+// day selector change handler
+document.getElementById('daySelector').addEventListener('change', function(e) {
+    const selectedDay = parseInt(e.target.value);
+    displayHourlyForecast(selectedDay);
+});
+
 
 
 
