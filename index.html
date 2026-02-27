@@ -24,7 +24,7 @@
                 
                 <div class="units-menu" id="unitsMenu" role="menu" aria-label="Unit selection" hidden>
                     <div class="units-section">
-                        <div class="utins-options">
+                        <div class="units-options">
                             <button class="optionButton" id="imperialSwitch"  role="menuitem">
                                 Switch to imperial
                                 <img src="./assets/images/icon-checkmark.svg" alt="">
@@ -114,16 +114,15 @@
          </div>
 
          <!-- Error -->
-          <div class="error-state hidden" id="errorState">
-                <img src="./assets/images/icon-error.svg" alt="Error" class="error-icon">
-                <h2>Something went wrong</h2>
-                <p id="errorMessage">Unable to load weather data.</p>
-                <button class="btn btn-primary" id="retryButton">
-                    <img src="./assets/images/icon-retry.svg" alt="">
-                    Try Again
-                </button>
-          </div>
-
+        <div class="error-state hidden" id="errorState">
+            <img src="./assets/images/icon-error.svg" alt="Error" class="error-icon">
+            <h2>Something went wrong</h2>
+            <p id="errorMessage">We couldn't connect to the server (API error). Please try again in a few moments.</p>
+            <button class="btn btn-primary" id="retryButton">
+                <img src="./assets/images/icon-retry.svg" alt="">
+                Retry
+            </button>
+        </div>
           <!-- Data -->
            <div class="weather-data hidden" id="weatherData"> 
                 <div class="weather-left-column">
@@ -138,9 +137,6 @@
                                         Monday, Feb 23, 2026
                                     </div>
                                 </div>
-                                <button class="favorite-button" id="favoriteButton" aria-label="Add to favorites">
-                                    <img src="./assets/images/icon-checkmark.svg" alt="">
-                                </button>
                             </div>
 
                             <div class="current-temp-section">
