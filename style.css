@@ -69,7 +69,7 @@ body{
     background-color: var(--neutral-600);
 }
 .units-button:focus{
-    outline: 2px solid  var(--orange-500);
+    outline: 2px solid  var(--neutral-0);
     outline-offset: 2px;
 }
 .units-dropdown {
@@ -147,7 +147,7 @@ body{
     color: var(--neutral-0);
 }
 .optionButton:focus-visible {
-    outline: 2px solid var(--orange-500);
+    outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
 .optionButton img {
@@ -230,7 +230,7 @@ body{
 
 }
 .btn-btn-primary-search-button:focus-visible {
-    outline: 2px solid var(--orange-500);
+    outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
 .btn-primary {
@@ -287,10 +287,10 @@ body{
 }
 
 .search-result:focus-visible {
-    outline: 2px solid var(--orange-500);
+    outline: 2px solid var(--neutral-0);
     outline-offset: -2px;
+    background-color: var(--neutral-700);
 }
-
 
 
 
@@ -343,7 +343,8 @@ body{
     text-align: center;
     background-color: var(--neutral-800);
     border-radius: 16px;
-    margin: 24px 0;
+    margin: 24px auto;
+    max-width: 500px;
 }
 
 .error-state[hidden] {
@@ -361,7 +362,7 @@ body{
     font-weight: 700;
     font-size: 24px;
     color: var(--neutral-0);
-    margin-bottom: 12px;
+    margin: 16px 0 8px;
 }
 
 #errorMessage {
@@ -369,6 +370,7 @@ body{
     font-size: 16px;
     color: var(--neutral-300);
     margin-bottom: 24px;
+    line-height: 1.5;
 }
 
 #retryButton {
@@ -461,30 +463,6 @@ body{
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
     color: var(--neutral-300);
-}
-
-.favorite-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-}
-
-.favorite-button img {
-    width: 24px;
-    height: 24px;
-    filter: brightness(0) invert(1);
-    opacity: 0.6;
-    transition: opacity 0.2s ease;
-}
-
-.favorite-button:hover img {
-    opacity: 1;
-}
-
-.favorite-button:focus-visible {
-    outline: 2px solid var(--orange-500);
-    outline-offset: 2px;
 }
 
 .current-temp-section {
@@ -704,4 +682,20 @@ body{
     color: var(--neutral-0);
     min-width: 40px;
     text-align: right;
+}
+
+
+
+
+
+
+.units-button:focus-visible,
+.btn-btn-primary-search-button:focus-visible,
+.search-result:focus-visible,
+.day-selector:focus-visible,
+.forecast-day:focus-visible,
+.favorite-button:focus-visible,
+.optionButton:focus-visible {
+    outline: 2px solid var(--neutral-0); /* White */
+    outline-offset: 2px;
 }
