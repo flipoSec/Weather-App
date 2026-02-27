@@ -37,7 +37,6 @@ document.addEventListener('keydown', function(event){
 
 
 
-
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
 const searchResults = document.getElementById('searchResults');
@@ -45,38 +44,58 @@ const weatherData = document.getElementById('weatherData');
 const loadingState = document.getElementById('loadingState');
 const errorState = document.getElementById('errorState');
 
-
 let searchTimeout;
 
-
+// Search input with debounce (shows suggestions while typing)
 searchInput.addEventListener('input', function(e) {
     const query = e.target.value.trim();
     
-
     clearTimeout(searchTimeout);
     
-
     if (query.length < 2) {
         searchResults.hidden = true;
         return;
     }
     
-    // Wait for user to stop typing (300ms debounce)
     searchTimeout = setTimeout(() => {
         fetchLocationSuggestions(query);
-    }, 300);
+    }, 200);
 });
 
-// Search button click
+// Search button click - direct weather fetch (no dropdown selection needed)
 searchButton.addEventListener('click', function(e) {
     e.preventDefault();
     const query = searchInput.value.trim();
-    if (query.length >= 2) {
-        fetchLocationSuggestions(query);
-    }
+    
+    if (query.length < 2) return;
+    
+    const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
+    
+    fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.results && data.results.length > 0) {
+                const location = data.results[0];
+                const locationName = location.admin1 
+                    ? `${location.name}, ${location.admin1}, ${location.country}`
+                    : `${location.name}, ${location.country}`;
+                
+                fetchWeatherData(location.latitude, location.longitude, locationName);
+                searchInput.value = locationName;
+                searchResults.hidden = true;
+            } else {
+                console.log('No locations found');
+                // You could show a "not found" message here
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorState.hidden = false;
+            document.getElementById('errorMessage').textContent = 'Failed to find location. Please try again.';
+        });
 });
 
-// Fetch location suggestions from Open-Meteo Geocoding API
+// Fetch location suggestions for dropdown
 function fetchLocationSuggestions(query) {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
     
@@ -91,9 +110,8 @@ function fetchLocationSuggestions(query) {
         });
 }
 
-// Display search results in dropdown
+// Display search results dropdown
 function displaySearchResults(results) {
-    // Clear previous results
     searchResults.innerHTML = '';
     
     if (results.length === 0) {
@@ -101,25 +119,20 @@ function displaySearchResults(results) {
         return;
     }
     
-    // Create result items
     results.forEach(location => {
-        const resultItem = document.createElement('div');
-        resultItem.className = 'search-result';
-        resultItem.setAttribute('role', 'option');
-        
-        // Format location name (city, country)
         const locationName = location.admin1 
             ? `${location.name}, ${location.admin1}, ${location.country}`
             : `${location.name}, ${location.country}`;
         
+        const resultItem = document.createElement('div');
+        resultItem.className = 'search-result';
+        resultItem.setAttribute('role', 'option');
+        resultItem.setAttribute('aria-selected', 'false');
         resultItem.textContent = locationName;
-        
-        // Store coordinates for later use
         resultItem.dataset.lat = location.latitude;
         resultItem.dataset.lon = location.longitude;
         resultItem.dataset.name = locationName;
         
-        // Add click handler
         resultItem.addEventListener('click', function() {
             selectLocation(this);
         });
@@ -127,29 +140,23 @@ function displaySearchResults(results) {
         searchResults.appendChild(resultItem);
     });
     
-    // Show results
     searchResults.hidden = false;
 }
 
-// Handle location selection
+// Select location from dropdown
 function selectLocation(resultElement) {
     const lat = resultElement.dataset.lat;
     const lon = resultElement.dataset.lon;
     const locationName = resultElement.dataset.name;
     
-    // Update input with selected location
     searchInput.value = locationName;
-    
-    // Hide results
     searchResults.hidden = true;
     
-    // Fetch weather for this location
     fetchWeatherData(lat, lon, locationName);
 }
 
-// Fetch weather data from Open-Meteo API
+// Fetch weather data from Open-Meteo
 function fetchWeatherData(lat, lon, locationName) {
-    // Show loading, hide error and previous data
     loadingState.hidden = false;
     errorState.hidden = true;
     weatherData.hidden = true;
@@ -159,30 +166,48 @@ function fetchWeatherData(lat, lon, locationName) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            // Update UI with weather data
             updateWeatherUI(data, locationName);
-            
-            // Hide loading, show data
             loadingState.hidden = true;
             weatherData.hidden = false;
         })
         .catch(error => {
             console.error('Error fetching weather:', error);
-            
-            // Show error
             loadingState.hidden = true;
             errorState.hidden = false;
             document.getElementById('errorMessage').textContent = 'Failed to load weather data. Please try again.';
         });
 }
 
-// Update UI with weather data (placeholder - we'll implement this next)
+// Update UI with weather data
 function updateWeatherUI(data, locationName) {
-    console.log('Weather data:', data);
-    // We'll implement this in the next step
+    document.getElementById('currentLocation').textContent = locationName;
+    
+    if (data.current_weather) {
+        const current = data.current_weather;
+        
+        document.getElementById('currentTemp').textContent = Math.round(current.temperature) + '°';
+        
+        const weatherDesc = getWeatherDescription(current.weathercode);
+        document.getElementById('currentDescription').textContent = weatherDesc;
+        
+        const iconMap = {
+            0: 'icon-sunny.webp',
+            1: 'icon-sunny.webp',
+            2: 'icon-partly-cloudy.webp',
+            3: 'icon-overcast.webp',
+            45: 'icon-fog.webp',
+            51: 'icon-rain.webp',
+            61: 'icon-rain.webp',
+            71: 'icon-snow.webp',
+            95: 'icon-thunderstorm.webp'
+        };
+        
+        const iconFile = iconMap[current.weathercode] || 'icon-overcast.webp';
+        document.getElementById('currentWeatherIcon').src = `./assets/images/${iconFile}`;
+    }
 }
 
-// Close search results when clicking outside
+// Close dropdown when clicking outside
 document.addEventListener('click', function(event) {
     const isClickInside = searchInput.contains(event.target) || 
                          searchResults.contains(event.target) ||
@@ -193,7 +218,42 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Handle keyboard navigation in results
+// Weather code to description mapping
+function getWeatherDescription(code) {
+    const descriptions = {
+        0: 'Clear sky',
+        1: 'Mainly clear',
+        2: 'Partly cloudy',
+        3: 'Overcast',
+        45: 'Foggy',
+        48: 'Rime fog',
+        51: 'Light drizzle',
+        53: 'Moderate drizzle',
+        55: 'Dense drizzle',
+        56: 'Freezing drizzle',
+        57: 'Dense freezing drizzle',
+        61: 'Slight rain',
+        63: 'Moderate rain',
+        65: 'Heavy rain',
+        66: 'Freezing rain',
+        67: 'Heavy freezing rain',
+        71: 'Slight snow',
+        73: 'Moderate snow',
+        75: 'Heavy snow',
+        77: 'Snow grains',
+        80: 'Slight rain showers',
+        81: 'Moderate rain showers',
+        82: 'Violent rain showers',
+        85: 'Slight snow showers',
+        86: 'Heavy snow showers',
+        95: 'Thunderstorm',
+        96: 'Thunderstorm with hail',
+        99: 'Heavy thunderstorm with hail'
+    };
+    return descriptions[code] || 'Unknown';
+}
+
+// Keyboard navigation
 searchInput.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         searchResults.hidden = true;
@@ -206,7 +266,6 @@ searchInput.addEventListener('keydown', function(e) {
     }
 });
 
-// Allow arrow navigation in results
 searchResults.addEventListener('keydown', function(e) {
     const results = Array.from(searchResults.querySelectorAll('.search-result'));
     const currentIndex = results.indexOf(document.activeElement);
@@ -224,7 +283,6 @@ searchResults.addEventListener('keydown', function(e) {
         selectLocation(document.activeElement);
     }
 });
-
 
 
 
