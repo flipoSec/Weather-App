@@ -37,6 +37,187 @@ document.addEventListener('keydown', function(event){
 
 
 
+
+
+
+
+// Unit conversion functions
+const unitConverters = {
+    // Temperature: Celsius to Fahrenheit
+    celsiusToFahrenheit: (celsius) => Math.round((celsius * 9/5) + 32),
+    fahrenheitToCelsius: (fahrenheit) => Math.round((fahrenheit - 32) * 5/9),
+    
+    // Wind speed: km/h to mph
+    kmhToMph: (kmh) => Math.round(kmh * 0.621371),
+    mphToKmh: (mph) => Math.round(mph * 1.60934),
+    
+    // Precipitation: mm to inches
+    mmToInches: (mm) => (mm * 0.0393701).toFixed(2),
+    inchesToMm: (inches) => (inches / 0.0393701).toFixed(0)
+};
+
+// Current unit state
+let currentUnits = {
+    temperature: 'celsius', // 'celsius' or 'fahrenheit'
+    windSpeed: 'kmh',       // 'kmh' or 'mph'
+    precipitation: 'mm'     // 'mm' or 'in'
+};
+
+
+// Get all unit option buttons
+const unitOptions = document.querySelectorAll('.optionButton');
+const imperialSwitch = document.getElementById('imperialSwitch');
+
+// Store original weather data for conversion
+let lastWeatherData = null;
+let lastLocationName = '';
+
+// Handle individual unit selection
+unitOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        // Remove active class from siblings in same group
+        const parentGroup = this.closest('.units-options');
+        if (parentGroup) {
+            parentGroup.querySelectorAll('.optionButton').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Update unit state based on which button was clicked
+        const optionId = this.id;
+        
+        if (optionId === 'celsius' || optionId === 'fahrenheit') {
+            currentUnits.temperature = optionId === 'celsius' ? 'celsius' : 'fahrenheit';
+        } else if (optionId === 'wind-kmh' || optionId === 'wind-mph') {
+            currentUnits.windSpeed = optionId === 'wind-kmh' ? 'kmh' : 'mph';
+        } else if (optionId === 'precip-mm' || optionId === 'precip-in') {
+            currentUnits.precipitation = optionId === 'precip-mm' ? 'mm' : 'in';
+        }
+        
+        // Update UI with new units if we have weather data
+        if (lastWeatherData) {
+            updateUnitsDisplay();
+        }
+    });
+});
+
+// Imperial switch toggles all to imperial
+imperialSwitch.addEventListener('click', function() {
+    // Set Fahrenheit active
+    document.getElementById('fahrenheit').classList.add('active');
+    document.getElementById('celsius').classList.remove('active');
+    currentUnits.temperature = 'fahrenheit';
+    
+    // Set mph active
+    document.getElementById('wind-mph').classList.add('active');
+    document.getElementById('wind-kmh').classList.remove('active');
+    currentUnits.windSpeed = 'mph';
+    
+    // Set inches active
+    document.getElementById('precip-in').classList.add('active');
+    document.getElementById('precip-mm').classList.remove('active');
+    currentUnits.precipitation = 'in';
+    
+    // Update UI if we have weather data
+    if (lastWeatherData) {
+        updateUnitsDisplay();
+    }
+});
+
+// Function to update all displayed values based on current units
+function updateUnitsDisplay() {
+    if (!lastWeatherData || !lastWeatherData.current_weather) return;
+    
+    const current = lastWeatherData.current_weather;
+    
+    // Update temperature
+    let tempValue = Math.round(current.temperature);
+    if (currentUnits.temperature === 'fahrenheit') {
+        tempValue = unitConverters.celsiusToFahrenheit(current.temperature);
+    }
+    document.getElementById('currentTemp').textContent = tempValue + '°';
+    
+    // Update feels like (approximate)
+    let feelsLike = Math.round(current.temperature - 2);
+    if (currentUnits.temperature === 'fahrenheit') {
+        feelsLike = unitConverters.celsiusToFahrenheit(current.temperature - 2);
+    }
+    document.getElementById('feelsLike').textContent = feelsLike + '°';
+    
+    // Update wind speed
+    let windValue = Math.round(current.windspeed);
+    let windUnit = 'km/h';
+    if (currentUnits.windSpeed === 'mph') {
+        windValue = unitConverters.kmhToMph(current.windspeed);
+        windUnit = 'mph';
+    }
+    document.getElementById('windSpeed').textContent = windValue + ' ' + windUnit;
+    
+    // Update precipitation if available
+    if (lastWeatherData.hourly && lastWeatherData.hourly.precipitation) {
+        let precipValue = lastWeatherData.hourly.precipitation[0];
+        let precipUnit = 'mm';
+        if (currentUnits.precipitation === 'in') {
+            precipValue = unitConverters.mmToInches(precipValue);
+            precipUnit = 'in';
+        }
+        document.getElementById('precipitation').textContent = precipValue + ' ' + precipUnit;
+    }
+    
+    // Update daily forecast temperatures
+    if (lastWeatherData.daily) {
+        const forecastDays = document.getElementById('forecastDays');
+        const dayElements = forecastDays.children;
+        
+        for (let i = 0; i < dayElements.length; i++) {
+            const dayElement = dayElements[i];
+            const highSpan = dayElement.querySelector('.temp-high');
+            const lowSpan = dayElement.querySelector('.temp-low');
+            
+            if (highSpan && lowSpan) {
+                let high = parseInt(highSpan.textContent);
+                let low = parseInt(lowSpan.textContent);
+                
+                if (currentUnits.temperature === 'fahrenheit') {
+                    high = unitConverters.celsiusToFahrenheit(high);
+                    low = unitConverters.celsiusToFahrenheit(low);
+                }
+                
+                highSpan.textContent = high + '°';
+                lowSpan.textContent = low + '°';
+            }
+        }
+    }
+    
+    // Update hourly forecast temperatures
+    const hourlySlots = document.querySelectorAll('.forecast-hour .hour-temp');
+    hourlySlots.forEach(slot => {
+        let temp = parseInt(slot.textContent);
+        if (currentUnits.temperature === 'fahrenheit') {
+            temp = unitConverters.celsiusToFahrenheit(temp);
+        }
+        slot.textContent = temp + '°';
+    });
+}
+
+
+// Set initial active states (metric by default)
+window.addEventListener('load', function() {
+    document.getElementById('celsius').classList.add('active');
+    document.getElementById('wind-kmh').classList.add('active');
+    document.getElementById('precip-mm').classList.add('active');
+    
+    // Load default weather
+    fetchWeatherData(52.52, 13.405, 'Berlin, Germany');
+});
+
+
+
+
+
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
 const searchResults = document.getElementById('searchResults');
