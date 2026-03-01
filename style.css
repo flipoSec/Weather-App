@@ -10,52 +10,57 @@
     --blue-700: hsl(248, 70%, 36%);
     --orange-500: hsl(28, 100%, 52%);
 }
-*{
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-body{
+
+body {
     background-color: var(--neutral-900);
     color: var(--neutral-0);
     font-family: 'DM Sans', sans-serif;
 }
-.header{
+
+/* Header */
+.header {
     display: flex;
     align-items: center;
     text-align: center;
-    background-color: hsla(243, 27%, 20%, 0.9); /* 90% opacity */
+    background-color: hsla(243, 27%, 20%, 0.9);
     backdrop-filter: blur(10px);
     position: sticky;
+    top: 0;
     padding: 16px 32px;
-    z-index: 1000
+    z-index: 1000;
 }
-.logo  img{
+
+.logo img {
     display: block;
     height: 32px;
     width: auto;
-    
 }
 
-.header-controls{
+.header-controls {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 16px;
     width: 100%;
-    
 }
-.units-dropdown{
-    margin-right: 0px;
+
+/* Units Dropdown */
+.units-dropdown {
+    position: relative;
     z-index: 1001;
 }
 
-
-.units-button{
+.units-button {
     background-color: var(--neutral-700);
     color: var(--neutral-0);
     padding: 8px 16px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid var(--neutral-600);
     font-family: 'DM Sans', sans-serif;
     font-weight: 500;
@@ -65,75 +70,76 @@ body{
     align-items: center;
     gap: 0.5rem;
 }
-.units-button:hover{
+
+.units-button:hover {
     background-color: var(--neutral-600);
 }
-.units-button:focus{
-    outline: 2px solid  var(--neutral-0);
+
+.units-button:focus-visible {
+    outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
-.units-dropdown {
-    position: relative; /* so menu positions relative to this container */
-}
-.dropdown-icon{
+
+.dropdown-icon {
     transition: transform 0.2s ease;
 }
+
 [aria-expanded="true"] .dropdown-icon {
     transform: rotate(180deg);
 }
 
-
-
-
 .hidden {
     display: none;
 }
+
 .units-menu {
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: calc(100% + 8px);
     right: 0;
     background-color: var(--neutral-800);
     border: 1px solid var(--neutral-600);
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     min-width: 220px;
-    z-index: 9999
-    
+    z-index: 9999;
 }
+
 .units-menu[hidden] {
     display: none;
 }
-.units-section{
+
+.units-section {
     padding: 8px 16px;
     border-bottom: 1px solid var(--neutral-600);
 }
-.units-section:last-child{
+
+.units-section:last-child {
     border-bottom: none;
 }
-.units-section > :first-child{
+
+.units-section > :first-child {
     color: var(--neutral-300);
     text-transform: uppercase;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
     display: block;
 }
 
-
-
-.units-options{
+.units-options {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
-.optionButton{
+
+.optionButton, .imperial-switch {
     background: none;
     border: none;
     color: var(--neutral-200);
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.9375rem;
-    padding: 0.5rem 0.75rem;
+    font-size: 14px;
+    padding: 8px 12px;
     text-align: left;
     cursor: pointer;
     border-radius: 6px;
@@ -142,97 +148,119 @@ body{
     justify-content: space-between;
     width: 100%;
 }
-.optionButton:hover {
+
+.optionButton:hover, .imperial-switch:hover {
     background-color: hsla(243, 23%, 30%, 0.5);
     color: var(--neutral-0);
 }
-.optionButton:focus-visible {
+
+.optionButton:focus-visible, .imperial-switch:focus-visible {
     outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
-.optionButton img {
-    opacity: 0; 
+
+.optionButton img, .imperial-switch img {
+    opacity: 0;
+    width: 16px;
+    height: 16px;
 }
-.optionButton.active img {
+
+.optionButton.active img, .imperial-switch.active img {
     opacity: 1;
 }
 
-
-
-.main-title{
-
+/* Main Content */
+.main-title {
     font-family: 'Bricolage Grotesque', sans-serif;
     font-weight: 700;
     font-size: 32px;
     text-align: center;
     color: var(--neutral-0);
     margin: 32px 0 24px;
-
 }
+
 .weather-content {
     position: relative;
     z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
 }
-.search-section{
+
+/* Search Section */
+.search-section {
     margin-bottom: 32px;
     z-index: 1;
 }
 
-.search-container{
+.search-container {
     display: flex;
     align-items: center;
     justify-content: center;
-        gap: 8px;
+    gap: 8px;
     position: relative;
+    max-width: 600px;
+    margin: 0 auto;
 }
-.search-input-wrapper{
+
+.search-input-wrapper {
     display: flex;
     align-items: center;
     background-color: var(--neutral-600);
     border-radius: 8px;
     padding: 8px 16px;
     gap: 8px;
+    flex: 1;
 }
+
 .search-icon {
     width: 20px;
     height: 20px;
     filter: brightness(0) invert(1);
 }
-.input-search-input{
+
+.input-search-input {
     background: transparent;
     border: none;
     color: var(--neutral-0);
     font-family: 'DM Sans', sans-serif;
     font-size: 16px;
-    width: 250px;
+    width: 100%;
 }
+
 .input-search-input::placeholder {
     color: var(--neutral-300);
     opacity: 0.8;
 }
-.input-search-input:focus{
-    outline: none;
+
+.input-search-input:focus-visible {
+    outline: 2px solid var(--neutral-0);
+    outline-offset: 2px;
 }
-.btn-btn-primary-search-button{
+
+.btn-btn-primary-search-button {
     background-color: var(--blue-500);
     color: var(--neutral-0);
     border: none;
     border-radius: 8px;
-    padding: 10px 20px;
+    padding: 10px 24px;
     font-family: 'DM Sans', sans-serif;
     font-weight: 600;
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    white-space: nowrap;
 }
-.btn-btn-primary-search-button:hover{
-    background-color: var(--blue-700);
 
+.btn-btn-primary-search-button:hover {
+    background-color: var(--blue-700);
 }
+
 .btn-btn-primary-search-button:focus-visible {
     outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
+
 .btn-primary {
     background-color: var(--blue-500);
     color: var(--neutral-0);
@@ -245,18 +273,17 @@ body{
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
+
 .btn-primary:hover {
     background-color: var(--blue-700);
 }
+
 .btn-primary:focus-visible {
-    outline: 2px solid var(--orange-500);
+    outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
 
-
-
-
-
+/* Search Results */
 .search-results {
     position: absolute;
     top: calc(100% + 8px);
@@ -267,7 +294,6 @@ body{
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     z-index: 1000;
-    display: block; 
 }
 
 .search-results[hidden] {
@@ -292,13 +318,7 @@ body{
     background-color: var(--neutral-700);
 }
 
-
-
-
-
-
-
-
+/* Loading State */
 .loading-state {
     display: flex;
     flex-direction: column;
@@ -330,10 +350,7 @@ body{
     color: var(--neutral-300);
 }
 
-
-
-
-
+/* Error State */
 .error-state {
     display: flex;
     flex-direction: column;
@@ -393,16 +410,12 @@ body{
     background-color: var(--blue-700);
 }
 
+#retryButton:focus-visible {
+    outline: 2px solid var(--neutral-0);
+    outline-offset: 2px;
+}
 
-
-
-
-
-
-
-
-
-
+/* Weather Data Layout */
 .weather-data {
     display: flex;
     gap: 24px;
@@ -415,26 +428,17 @@ body{
 
 .weather-left-column {
     flex: 1;
-    max-width: calc(100% - 324px); 
+    max-width: calc(100% - 324px);
 }
 
-
-.hourly-forecast.card {
-    flex: 0 0 300px; 
-    background-color: var(--neutral-800);
-    border-radius: 16px;
-    padding: 24px;
-    align-self: flex-start;
-}
-
-
+/* Cards */
 .card {
     background-color: var(--neutral-800);
     border-radius: 16px;
     padding: 24px;
 }
 
-
+/* Current Weather */
 .current-weather.card {
     margin-bottom: 24px;
 }
@@ -483,6 +487,7 @@ body{
 .current-weather-icon {
     width: 64px;
     height: 64px;
+    object-fit: contain;
 }
 
 .current-description {
@@ -491,7 +496,7 @@ body{
     color: var(--neutral-300);
 }
 
-
+/* Weather Metrics */
 .weather-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -507,7 +512,7 @@ body{
 
 .metric-label {
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     color: var(--neutral-300);
     margin-bottom: 8px;
     text-transform: uppercase;
@@ -517,20 +522,21 @@ body{
 .metric-value {
     font-family: 'DM Sans', sans-serif;
     font-weight: 600;
-    font-size: 24px;
+    font-size: 22px;
     color: var(--neutral-0);
+    line-height: 1.2;
 }
 
-
-
+/* Daily Forecast */
 .daily-forecast {
     margin-top: 24px;
+    width: 100%;
 }
 
 .section-title {
     font-family: 'DM Sans', sans-serif;
     font-weight: 600;
-    font-size: 18px;
+    font-size: 16px;
     color: var(--neutral-0);
     margin-bottom: 16px;
     text-transform: uppercase;
@@ -539,23 +545,40 @@ body{
 
 .forecast-days {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     overflow-x: auto;
     padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neutral-500) var(--neutral-700);
+}
+
+.forecast-days::-webkit-scrollbar {
+    height: 6px;
+}
+
+.forecast-days::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-500);
+    border-radius: 20px;
+}
+
+.forecast-days::-webkit-scrollbar-track {
+    background-color: var(--neutral-700);
 }
 
 .forecast-day {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 70px;
-    padding: 12px 8px;
+    min-width: 65px;
+    padding: 10px 6px;
     background-color: var(--neutral-700);
     border-radius: 12px;
     cursor: pointer;
     border: none;
     color: inherit;
     font-family: 'DM Sans', sans-serif;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
 }
 
 .forecast-day:hover {
@@ -563,7 +586,7 @@ body{
 }
 
 .forecast-day:focus-visible {
-    outline: 2px solid var(--orange-500);
+    outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
 
@@ -572,22 +595,24 @@ body{
 }
 
 .day-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--neutral-300);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
 }
 
 .day-icon {
-    width: 32px;
-    height: 32px;
-    margin-bottom: 8px;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 6px;
+    object-fit: contain;
 }
 
 .day-temps {
     display: flex;
-    gap: 4px;
-    font-size: 14px;
+    gap: 6px;
+    font-size: 13px;
 }
 
 .temp-high {
@@ -599,20 +624,26 @@ body{
     color: var(--neutral-300);
 }
 
-
-
-
-
+/* Hourly Forecast */
+.hourly-forecast.card {
+    flex: 0 0 300px;
+    background-color: var(--neutral-800);
+    border-radius: 16px;
+    padding: 20px;
+    align-self: flex-start;
+    height: fit-content;
+}
 
 .hourly-forecast .hourly-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .hourly-forecast .section-title {
     margin-bottom: 0;
+    font-size: 15px;
 }
 
 .day-selector {
@@ -620,42 +651,57 @@ body{
     color: var(--neutral-0);
     border: 1px solid var(--neutral-600);
     border-radius: 8px;
-    padding: 8px 32px 8px 12px;
+    padding: 6px 28px 6px 10px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
     background-repeat: no-repeat;
     background-position: right 8px center;
-    background-size: 16px;
+    background-size: 14px;
 }
 
 .day-selector:hover {
     background-color: var(--neutral-600);
 }
 
-.day-selector:focus {
-    outline: 2px solid var(--orange-500);
+.day-selector:focus-visible {
+    outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
 }
 
 .forecast-hours {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    max-height: 500px;
+    gap: 8px;
+    max-height: 400px;
     overflow-y: auto;
     padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neutral-500) var(--neutral-700);
+}
+
+.forecast-hours::-webkit-scrollbar {
+    width: 4px;
+}
+
+.forecast-hours::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-500);
+    border-radius: 20px;
+}
+
+.forecast-hours::-webkit-scrollbar-track {
+    background-color: var(--neutral-700);
 }
 
 .forecast-hour {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 0;
+    padding: 6px 0;
     border-bottom: 1px solid var(--neutral-700);
 }
 
@@ -665,37 +711,98 @@ body{
 
 .hour-time {
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--neutral-300);
-    min-width: 50px;
+    min-width: 45px;
 }
 
 .hour-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
 }
 
 .hour-temp {
     font-family: 'DM Sans', sans-serif;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
     color: var(--neutral-0);
-    min-width: 40px;
+    min-width: 35px;
     text-align: right;
 }
 
 
 
-
-
-
+/* Ensure all interactive elements have the same focus style */
 .units-button:focus-visible,
+.units-button:focus,
 .btn-btn-primary-search-button:focus-visible,
+.btn-btn-primary-search-button:focus,
 .search-result:focus-visible,
+.search-result:focus,
 .day-selector:focus-visible,
+.day-selector:focus,
 .forecast-day:focus-visible,
-.favorite-button:focus-visible,
-.optionButton:focus-visible {
-    outline: 2px solid var(--neutral-0); /* White */
+.forecast-day:focus,
+.optionButton:focus-visible,
+.optionButton:focus,
+.imperial-switch:focus-visible,
+.imperial-switch:focus,
+#retryButton:focus-visible,
+#retryButton:focus,
+.btn-primary:focus-visible,
+.btn-primary:focus {
+    outline: 2px solid var(--neutral-0);
     outline-offset: 2px;
+}
+
+/* Remove default browser outline for mouse clicks but keep for keyboard */
+.units-button:focus:not(:focus-visible),
+.btn-btn-primary-search-button:focus:not(:focus-visible),
+.search-result:focus:not(:focus-visible),
+.day-selector:focus:not(:focus-visible),
+.forecast-day:focus:not(:focus-visible),
+.optionButton:focus:not(:focus-visible),
+.imperial-switch:focus:not(:focus-visible),
+#retryButton:focus:not(:focus-visible),
+.btn-primary:focus:not(:focus-visible) {
+    outline: none;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .weather-data {
+        flex-direction: column;
+    }
+    
+    .weather-left-column {
+        max-width: 100%;
+    }
+    
+    .hourly-forecast.card {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+    
+    .header {
+        padding: 12px 16px;
+    }
+    
+    .main-title {
+        font-size: 24px;
+        margin: 24px 0 16px;
+    }
+    
+    .search-container {
+        flex-wrap: wrap;
+    }
+    
+    .search-input-wrapper {
+        width: 100%;
+    }
+    
+    .btn-btn-primary-search-button {
+        width: 100%;
+    }
 }
