@@ -2,9 +2,7 @@ let unitBtn = document.getElementById("unitsButton");
 let unitMenu = document.getElementById("unitsMenu");
 
 function toggleUnitsDropdown(){
-
     const isExpanded = unitBtn.getAttribute('aria-expanded') === 'true';
-
     unitBtn.setAttribute('aria-expanded', !isExpanded);
     unitMenu.hidden = isExpanded;
 }
@@ -12,14 +10,11 @@ function toggleUnitsDropdown(){
 unitBtn.addEventListener('click', toggleUnitsDropdown);
 
 document.addEventListener('click', function(event){
-
     const isClickInside = unitBtn.contains(event.target) || unitMenu.contains(event.target);
-
     if (!isClickInside && unitMenu.hidden === false){
         unitMenu.hidden = true;
         unitBtn.setAttribute('aria-expanded', 'false');
     }
-
 });
 
 document.addEventListener('keydown', function(event){
@@ -30,51 +25,36 @@ document.addEventListener('keydown', function(event){
     }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-// Unit conversion functions
-const unitConverters = {
-    // Temperature: Celsius to Fahrenheit
-    celsiusToFahrenheit: (celsius) => Math.round((celsius * 9/5) + 32),
-    fahrenheitToCelsius: (fahrenheit) => Math.round((fahrenheit - 32) * 5/9),
-    
-    // Wind speed: km/h to mph
-    kmhToMph: (kmh) => Math.round(kmh * 0.621371),
-    mphToKmh: (mph) => Math.round(mph * 1.60934),
-    
-    // Precipitation: mm to inches
-    mmToInches: (mm) => (mm * 0.0393701).toFixed(2),
-    inchesToMm: (inches) => (inches / 0.0393701).toFixed(0)
-};
-
-// Current unit state
-let currentUnits = {
-    temperature: 'celsius', // 'celsius' or 'fahrenheit'
-    windSpeed: 'kmh',       // 'kmh' or 'mph'
-    precipitation: 'mm'     // 'mm' or 'in'
-};
-
-
 // Get all unit option buttons
-const unitOptions = document.querySelectorAll('.optionButton');
+const unitOptions = document.querySelectorAll('.optionButton:not(#imperialSwitch)');
 const imperialSwitch = document.getElementById('imperialSwitch');
 
 // Store original weather data for conversion
 let lastWeatherData = null;
 let lastLocationName = '';
 
+// Unit conversion functions
+const unitConverters = {
+    celsiusToFahrenheit: (celsius) => Math.round((celsius * 9/5) + 32),
+    fahrenheitToCelsius: (fahrenheit) => Math.round((fahrenheit - 32) * 5/9),
+    kmhToMph: (kmh) => Math.round(kmh * 0.621371),
+    mphToKmh: (mph) => Math.round(mph * 1.60934),
+    mmToInches: (mm) => (mm * 0.0393701).toFixed(2),
+    inchesToMm: (inches) => (inches / 0.0393701).toFixed(0)
+};
+
+// Current unit state
+let currentUnits = {
+    temperature: 'celsius',
+    windSpeed: 'kmh',
+    precipitation: 'mm'
+};
+
 // Handle individual unit selection
 unitOptions.forEach(option => {
-    option.addEventListener('click', function() {
+    option.addEventListener('click', function(e) {
+        e.preventDefault();
+        
         // Remove active class from siblings in same group
         const parentGroup = this.closest('.units-options');
         if (parentGroup) {
@@ -105,47 +85,82 @@ unitOptions.forEach(option => {
 });
 
 // Imperial switch toggles all to imperial
-imperialSwitch.addEventListener('click', function() {
-    // Set Fahrenheit active
-    document.getElementById('fahrenheit').classList.add('active');
-    document.getElementById('celsius').classList.remove('active');
-    currentUnits.temperature = 'fahrenheit';
-    
-    // Set mph active
-    document.getElementById('wind-mph').classList.add('active');
-    document.getElementById('wind-kmh').classList.remove('active');
-    currentUnits.windSpeed = 'mph';
-    
-    // Set inches active
-    document.getElementById('precip-in').classList.add('active');
-    document.getElementById('precip-mm').classList.remove('active');
-    currentUnits.precipitation = 'in';
-    
-    // Update UI if we have weather data
-    if (lastWeatherData) {
-        updateUnitsDisplay();
-    }
-});
+if (imperialSwitch) {
+    imperialSwitch.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Set Fahrenheit active
+        const fahrenheitBtn = document.getElementById('fahrenheit');
+        const celsiusBtn = document.getElementById('celsius');
+        
+        if (fahrenheitBtn && celsiusBtn) {
+            fahrenheitBtn.classList.add('active');
+            celsiusBtn.classList.remove('active');
+            currentUnits.temperature = 'fahrenheit';
+        }
+        
+        // Set mph active
+        const mphBtn = document.getElementById('wind-mph');
+        const kmhBtn = document.getElementById('wind-kmh');
+        
+        if (mphBtn && kmhBtn) {
+            mphBtn.classList.add('active');
+            kmhBtn.classList.remove('active');
+            currentUnits.windSpeed = 'mph';
+        }
+        
+        // Set inches active
+        const inchesBtn = document.getElementById('precip-in');
+        const mmBtn = document.getElementById('precip-mm');
+        
+        if (inchesBtn && mmBtn) {
+            inchesBtn.classList.add('active');
+            mmBtn.classList.remove('active');
+            currentUnits.precipitation = 'in';
+        }
+        
+        // Update UI if we have weather data
+        if (lastWeatherData) {
+            updateUnitsDisplay();
+        }
+    });
+}
 
 // Function to update all displayed values based on current units
 function updateUnitsDisplay() {
-    if (!lastWeatherData || !lastWeatherData.current_weather) return;
+    if (!lastWeatherData || !lastWeatherData.current_weather) {
+        return;
+    }
     
     const current = lastWeatherData.current_weather;
     
-    // Update temperature
-    let tempValue = Math.round(current.temperature);
-    if (currentUnits.temperature === 'fahrenheit') {
-        tempValue = unitConverters.celsiusToFahrenheit(current.temperature);
-    }
-    document.getElementById('currentTemp').textContent = tempValue + '°';
+    // Get original Celsius values
+    let tempCelsius = current.temperature;
+    let feelsLikeCelsius = current.temperature - 2;
     
-    // Update feels like (approximate)
-    let feelsLike = Math.round(current.temperature - 2);
+    // Update temperature
+    let tempValue = Math.round(tempCelsius);
+    let tempUnit = '°C';
     if (currentUnits.temperature === 'fahrenheit') {
-        feelsLike = unitConverters.celsiusToFahrenheit(current.temperature - 2);
+        tempValue = unitConverters.celsiusToFahrenheit(tempCelsius);
+        tempUnit = '°F';
     }
-    document.getElementById('feelsLike').textContent = feelsLike + '°';
+    const tempElement = document.getElementById('currentTemp');
+    if (tempElement) {
+        tempElement.textContent = tempValue + tempUnit;
+    }
+    
+    // Update feels like
+    let feelsLike = Math.round(feelsLikeCelsius);
+    let feelsLikeUnit = '°C';
+    if (currentUnits.temperature === 'fahrenheit') {
+        feelsLike = unitConverters.celsiusToFahrenheit(feelsLikeCelsius);
+        feelsLikeUnit = '°F';
+    }
+    const feelsLikeElement = document.getElementById('feelsLike');
+    if (feelsLikeElement) {
+        feelsLikeElement.textContent = feelsLike + feelsLikeUnit;
+    }
     
     // Update wind speed
     let windValue = Math.round(current.windspeed);
@@ -154,9 +169,12 @@ function updateUnitsDisplay() {
         windValue = unitConverters.kmhToMph(current.windspeed);
         windUnit = 'mph';
     }
-    document.getElementById('windSpeed').textContent = windValue + ' ' + windUnit;
+    const windElement = document.getElementById('windSpeed');
+    if (windElement) {
+        windElement.textContent = windValue + ' ' + windUnit;
+    }
     
-    // Update precipitation if available
+    // Update precipitation
     if (lastWeatherData.hourly && lastWeatherData.hourly.precipitation) {
         let precipValue = lastWeatherData.hourly.precipitation[0];
         let precipUnit = 'mm';
@@ -164,59 +182,70 @@ function updateUnitsDisplay() {
             precipValue = unitConverters.mmToInches(precipValue);
             precipUnit = 'in';
         }
-        document.getElementById('precipitation').textContent = precipValue + ' ' + precipUnit;
+        const precipElement = document.getElementById('precipitation');
+        if (precipElement) {
+            precipElement.textContent = precipValue + ' ' + precipUnit;
+        }
     }
     
-    // Update daily forecast temperatures
+    // Update daily forecast temperatures - use original values from lastWeatherData
     if (lastWeatherData.daily) {
         const forecastDays = document.getElementById('forecastDays');
-        const dayElements = forecastDays.children;
-        
-        for (let i = 0; i < dayElements.length; i++) {
-            const dayElement = dayElements[i];
-            const highSpan = dayElement.querySelector('.temp-high');
-            const lowSpan = dayElement.querySelector('.temp-low');
+        if (forecastDays) {
+            const dayElements = forecastDays.children;
             
-            if (highSpan && lowSpan) {
-                let high = parseInt(highSpan.textContent);
-                let low = parseInt(lowSpan.textContent);
+            for (let i = 0; i < dayElements.length; i++) {
+                const dayElement = dayElements[i];
+                const highSpan = dayElement.querySelector('.temp-high');
+                const lowSpan = dayElement.querySelector('.temp-low');
                 
-                if (currentUnits.temperature === 'fahrenheit') {
-                    high = unitConverters.celsiusToFahrenheit(high);
-                    low = unitConverters.celsiusToFahrenheit(low);
+                if (highSpan && lowSpan && i < lastWeatherData.daily.temperature_2m_max.length) {
+                    // Use original values from API data, not the displayed text
+                    let high = lastWeatherData.daily.temperature_2m_max[i];
+                    let low = lastWeatherData.daily.temperature_2m_min[i];
+                    
+                    if (currentUnits.temperature === 'fahrenheit') {
+                        high = unitConverters.celsiusToFahrenheit(high);
+                        low = unitConverters.celsiusToFahrenheit(low);
+                    } else {
+                        high = Math.round(high);
+                        low = Math.round(low);
+                    }
+                    
+                    highSpan.textContent = high + '°';
+                    lowSpan.textContent = low + '°';
                 }
-                
-                highSpan.textContent = high + '°';
-                lowSpan.textContent = low + '°';
             }
         }
     }
     
     // Update hourly forecast temperatures
-    const hourlySlots = document.querySelectorAll('.forecast-hour .hour-temp');
-    hourlySlots.forEach(slot => {
-        let temp = parseInt(slot.textContent);
-        if (currentUnits.temperature === 'fahrenheit') {
-            temp = unitConverters.celsiusToFahrenheit(temp);
-        }
-        slot.textContent = temp + '°';
-    });
+    if (window.hourlyData) {
+        const hourlySlots = document.querySelectorAll('.forecast-hour .hour-temp');
+        hourlySlots.forEach((slot, index) => {
+            if (index < window.hourlyData.temperature_2m.length) {
+                let temp = window.hourlyData.temperature_2m[index];
+                if (currentUnits.temperature === 'fahrenheit') {
+                    temp = unitConverters.celsiusToFahrenheit(temp);
+                } else {
+                    temp = Math.round(temp);
+                }
+                slot.textContent = temp + '°';
+            }
+        });
+    }
 }
 
-
-// Set initial active states (metric by default)
+// Set initial active states
 window.addEventListener('load', function() {
-    document.getElementById('celsius').classList.add('active');
-    document.getElementById('wind-kmh').classList.add('active');
-    document.getElementById('precip-mm').classList.add('active');
+    const celsiusBtn = document.getElementById('celsius');
+    const kmhBtn = document.getElementById('wind-kmh');
+    const mmBtn = document.getElementById('precip-mm');
     
-    // Load default weather
-    fetchWeatherData(52.52, 13.405, 'Berlin, Germany');
+    if (celsiusBtn) celsiusBtn.classList.add('active');
+    if (kmhBtn) kmhBtn.classList.add('active');
+    if (mmBtn) mmBtn.classList.add('active');
 });
-
-
-
-
 
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
@@ -229,14 +258,11 @@ let searchTimeout;
 
 // Retry button - use last searched location
 document.getElementById('retryButton').addEventListener('click', function() {
-    // Get the last searched location from the input
     const query = searchInput.value.trim();
     
     if (query.length >= 2) {
-        // Trigger search again
         searchButton.click();
     } else {
-        // If no query, use default location (Berlin)
         fetchWeatherData(52.52, 13.405, 'Berlin, Germany');
     }
 });
@@ -278,8 +304,6 @@ searchButton.addEventListener('click', function(e) {
                 fetchWeatherData(location.latitude, location.longitude, locationName);
                 searchInput.value = locationName;
                 searchResults.hidden = true;
-            } else {
-                console.log('No locations found');
             }
         })
         .catch(error => {
@@ -288,7 +312,6 @@ searchButton.addEventListener('click', function(e) {
             document.getElementById('errorMessage').textContent = 'Failed to find location. Please try again.';
         });
 });
-
 
 function fetchLocationSuggestions(query) {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
@@ -306,19 +329,12 @@ function fetchLocationSuggestions(query) {
 
 // Set initial state on page load
 window.addEventListener('load', function() {
-    // Hide error state initially
     errorState.hidden = true;
-    
-    // Hide loading state initially
     loadingState.hidden = true;
-    
-    // Show weather data with default Berlin values
     weatherData.hidden = false;
-    
-    // You could also fetch default weather for Berlin
+    // Uncomment to fetch Berlin weather on load
     // fetchWeatherData(52.52, 13.405, 'Berlin, Germany');
 });
-
 
 function displaySearchResults(results) {
     searchResults.innerHTML = '';
@@ -352,7 +368,6 @@ function displaySearchResults(results) {
     searchResults.hidden = false;
 }
 
-
 function selectLocation(resultElement) {
     const lat = resultElement.dataset.lat;
     const lon = resultElement.dataset.lon;
@@ -365,15 +380,11 @@ function selectLocation(resultElement) {
 }
 
 function fetchWeatherData(lat, lon, locationName) {
-    // When fetching new data:
-    // - Show loading
-    // - Hide error
-    // - Hide weather data (will show again only on success)
     loadingState.hidden = false;
     errorState.hidden = true;
     weatherData.hidden = true;
     
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode,relativehumidity_2m,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
     
     fetch(url)
         .then(response => {
@@ -383,21 +394,18 @@ function fetchWeatherData(lat, lon, locationName) {
             return response.json();
         })
         .then(data => {
-            // Success: Update UI, show weather data, hide loading and error
             updateWeatherUI(data, locationName);
             loadingState.hidden = true;
             errorState.hidden = true;
             weatherData.hidden = false;
+            lastWeatherData = data;
+            lastLocationName = locationName;
         })
         .catch(error => {
             console.error('Error fetching weather:', error);
-            
-            // Error: Hide loading and weather data, show error
             loadingState.hidden = true;
             weatherData.hidden = true;
             errorState.hidden = false;
-            
-            // Update error message to match design
             document.getElementById('errorMessage').textContent = 
                 'We couldn\'t connect to the server (API error). Please try again in a few moments.';
         });
@@ -406,7 +414,6 @@ function fetchWeatherData(lat, lon, locationName) {
 function updateWeatherUI(data, locationName) {
     document.getElementById('currentLocation').textContent = locationName;
     
-    // Update current date
     const now = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const formattedDate = now.toLocaleDateString('en-US', options);
@@ -415,14 +422,11 @@ function updateWeatherUI(data, locationName) {
     if (data.current_weather) {
         const current = data.current_weather;
         
-        // Temperature
         document.getElementById('currentTemp').textContent = Math.round(current.temperature) + '°';
         
-        // Weather description
         const weatherDesc = getWeatherDescription(current.weathercode);
         document.getElementById('currentDescription').textContent = weatherDesc;
         
-        // Weather icon
         const iconMap = {
             0: 'icon-sunny.webp',
             1: 'icon-sunny.webp',
@@ -437,35 +441,23 @@ function updateWeatherUI(data, locationName) {
         const iconFile = iconMap[current.weathercode] || 'icon-overcast.webp';
         document.getElementById('currentWeatherIcon').src = `./assets/images/${iconFile}`;
         
-        // Wind speed
-        document.getElementById('windSpeed').textContent = 
-            Math.round(current.windspeed) + ' km/h';
-        
-        // Feels like (approximate)
-        document.getElementById('feelsLike').textContent = 
-            Math.round(current.temperature - 2) + '°';
+        document.getElementById('windSpeed').textContent = Math.round(current.windspeed) + ' km/h';
+        document.getElementById('feelsLike').textContent = Math.round(current.temperature - 2) + '°';
     }
     
-    // Humidity (from hourly data)
     if (data.hourly && data.hourly.relativehumidity_2m) {
-        document.getElementById('humidity').textContent = 
-            data.hourly.relativehumidity_2m[0] + '%';
+        document.getElementById('humidity').textContent = data.hourly.relativehumidity_2m[0] + '%';
     }
     
-    // Precipitation (from hourly data if available)
     if (data.hourly && data.hourly.precipitation) {
-        document.getElementById('precipitation').textContent = 
-            data.hourly.precipitation[0] + ' mm';
+        document.getElementById('precipitation').textContent = data.hourly.precipitation[0] + ' mm';
     }
     
-    // Store data for hourly forecast
     window.hourlyData = data.hourly;
     window.dailyData = data.daily;
     
-    // Display hourly forecast
     displayHourlyForecast(0);
     
-    // Update daily forecast
     if (data.daily) {
         const forecastDays = document.getElementById('forecastDays');
         forecastDays.innerHTML = '';
@@ -509,7 +501,6 @@ function updateWeatherUI(data, locationName) {
         });
     }
 }
-
 
 function getWeatherDescription(code) {
     const descriptions = {
@@ -576,14 +567,6 @@ searchResults.addEventListener('keydown', function(e) {
     }
 });
 
-
-
-
-
-
-
-
-
 // display hourly forecast for a specific day index
 function displayHourlyForecast(dayIndex) {
     if (!window.hourlyData) return;
@@ -595,15 +578,12 @@ function displayHourlyForecast(dayIndex) {
     const hourlyTemp = window.hourlyData.temperature_2m;
     const hourlyWeatherCode = window.hourlyData.weathercode;
     
-    // each day has 24 hours (0-23)
     const startHour = dayIndex * 24;
     const endHour = startHour + 24;
     
-    // show only hours from 6 AM to 10 PM (or all hours if you prefer)
     for (let i = startHour; i < endHour; i++) {
         if (i >= hourlyTime.length) break;
         
-        // parse time to get hour only
         const timeStr = hourlyTime[i];
         const hour = new Date(timeStr).getHours();
         const ampm = hour >= 12 ? 'PM' : 'AM';
@@ -613,7 +593,6 @@ function displayHourlyForecast(dayIndex) {
         const temp = Math.round(hourlyTemp[i]);
         const weatherCode = hourlyWeatherCode[i];
         
-        // get icon for this hour
         const iconMap = {
             0: 'icon-sunny.webp',
             1: 'icon-sunny.webp',
@@ -627,7 +606,6 @@ function displayHourlyForecast(dayIndex) {
         };
         const iconFile = iconMap[weatherCode] || 'icon-overcast.webp';
         
-        // create hourly slot
         const hourSlot = document.createElement('div');
         hourSlot.className = 'forecast-hour';
         hourSlot.innerHTML = `
@@ -645,10 +623,3 @@ document.getElementById('daySelector').addEventListener('change', function(e) {
     const selectedDay = parseInt(e.target.value);
     displayHourlyForecast(selectedDay);
 });
-
-
-
-
-
-
-
