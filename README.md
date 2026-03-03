@@ -1,4 +1,5 @@
 Weather Now 🌤️
+
 A responsive weather web app that lets you search any city in the world and get real-time weather data — current conditions, a 7-day forecast, and a 24-hour hourly breakdown.
 Built as my first HTML/CSS/JavaScript project using the Frontend Mentor challenge as a design reference.
 
@@ -50,6 +51,7 @@ The difference between position: relative, absolute, sticky, and fixed
 Why [hidden] { display: none !important; } is necessary when CSS uses display: flex
 
 Keyboard accessibility with :focus-visible and ARIA attributes
+
 
 
 
