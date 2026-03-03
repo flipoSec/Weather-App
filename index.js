@@ -659,6 +659,4 @@ window.addEventListener('load', () => {
   loadingState.hidden = true;
   weatherData.hidden = true;
 
-  // Optional: auto-load a default city on startup
-  // fetchWeatherData(52.52, 13.405, 'Berlin, Germany');
 });
