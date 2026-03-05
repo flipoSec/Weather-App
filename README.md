@@ -31,7 +31,7 @@ CSS3 — custom properties, Flexbox, CSS Grid, animations
 Vanilla JavaScript — no frameworks or libraries
 Open-Meteo Weather API — free, no API key required
 
-🧠 What I Learned
+ What I Learned
 This was my first project combining HTML, CSS, JavaScript, and external APIs. Key things I picked up:
 
 How fetch() and Promises (.then() / .catch()) work
